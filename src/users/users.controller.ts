@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Put, Param, Delete, NotFoundException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
+import * as bcrypt from 'bcrypt';
 
 @Controller('users')
 export class UsersController {
@@ -26,6 +27,7 @@ export class UsersController {
     //create user
     @Post()
     async create(@Body() user: User): Promise<User> {
+        user.password = await bcrypt.hash(user.password, 10);
         return this.usersService.create(user);
     }
 
