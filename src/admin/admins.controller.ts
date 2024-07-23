@@ -3,7 +3,7 @@ import { Response } from 'express';
 import { AdminsService } from './admins.service';
 import { UsersService } from '../users/users.service';
 import { Admin } from './dto/admin.entity';
-import { UpdatePasswordDto } from "./dto/update-password.dto"
+import { UpdatePasswordDto } from "./dto/passwordUpdate-entity.dto"
 import { LoginDto } from "./dto/login-entity.dto"
 import { comparePasswords, hashPassword } from "../utils/password"
 import * as bcrypt from 'bcrypt';
@@ -23,7 +23,12 @@ export class AdminsController {
             // first check if an admin with corresponding email already exists
             const foundAdmin = await this.adminsService.getAdminByEmail(admin.email)
             if (!foundAdmin) {
-                const newAdmin = await this.adminsService.createAdmin(admin)
+                const adm : Admin = {
+                    ...admin,
+                    role: "admin" // set role
+                }
+                
+                const newAdmin = await this.adminsService.createAdmin(adm)
                 return res.status(HttpStatus.CREATED).json({
                     message: "admin created succesfully",
                     admin: newAdmin,
