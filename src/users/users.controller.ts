@@ -2,7 +2,6 @@ import { Controller, Get, Post, Body, Put, Param, Delete, NotFoundException, Que
 import { UsersService } from './users.service';
 import { User } from './dto/user.entity';
 import {hashPassword} from "../utils/password"
-import * as bcrypt from 'bcrypt';
 
 @Controller('auth')
 export class UsersController {
