@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { AdminsModule } from './admin/admin.module';
+import { TodosModule } from './todo/todos.module';
 
 
 @Module({
@@ -12,6 +13,7 @@ import { AdminsModule } from './admin/admin.module';
     ConfigModule.forRoot(),
     UsersModule,
     AdminsModule,
+    TodosModule,
     TypeOrmModule.forRoot({
       type: process.env.DB_TYPE as any,
       host: process.env.PG_HOST,
