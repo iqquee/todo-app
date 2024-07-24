@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Res, HttpStatus , UseGuards} from '@nestjs/common';
 import { Response } from 'express';
 import { AdminsService } from './admins.service';
 import { UsersService } from '../users/users.service';
@@ -8,6 +8,7 @@ import { LoginDto } from "./dto/login-entity.dto"
 import { comparePasswords, hashPassword } from "../utils/password"
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/users/dto/user.entity';
+import { JwtAdminGuard } from '../auth/jwt-admin.guard';
 
 @Controller("admin")
 export class AdminsController {
@@ -73,6 +74,7 @@ export class AdminsController {
     }
 
 
+    @UseGuards(JwtAdminGuard)
     @Put(":id")
     async updateAdminDetails(@Param() id: number, @Body() admin: Admin, @Res() res: Response): Promise<Response> {
         try {
@@ -90,6 +92,7 @@ export class AdminsController {
 
     }
 
+    @UseGuards(JwtAdminGuard)
     @Put("/security/password/:id")
     async updatePassword(@Param() id: number, @Body() pass: UpdatePasswordDto, @Res() res: Response): Promise<Response> {
         try {
@@ -113,6 +116,7 @@ export class AdminsController {
         }
     }
 
+    @UseGuards(JwtAdminGuard)
     @Get("/user/users")
     async getAllUsers(@Res() res: Response): Promise<Response> {
         try {
