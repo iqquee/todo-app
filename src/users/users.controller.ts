@@ -20,7 +20,6 @@ export class UsersController {
         } catch (error) {
             return errorResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occured. Please try again.", error.message)
         }
-
     }
 
     //get user by email
