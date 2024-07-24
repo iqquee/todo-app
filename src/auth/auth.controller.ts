@@ -30,7 +30,7 @@ export class AuthController {
             const response = await this.authService.loginUser(req.email, req.password)
             return successResponse(res, HttpStatus.OK, "user login successful", response)
         } catch (error) {
-            return errorResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occured. Please try again.", null)
+             return errorResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occured. Please try again.", error.message)
         }
     }
 
@@ -45,7 +45,7 @@ export class AuthController {
             const response = await this.authService.loginAdmin(req.email, req.password)
             return successResponse(res, HttpStatus.OK, "admin login successful", response)
         } catch (error) {
-            return errorResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occured. Please try again.", null)
+             return errorResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occured. Please try again.", error.message)
         }
     }
 
