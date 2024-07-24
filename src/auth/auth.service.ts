@@ -32,25 +32,31 @@ export class AuthService {
         return null;
     }
 
-    async loginUser(user: any) {
-        const payload = { email: user.email, sub: user.id, role: 'user' };
+    async loginUser(email: string, password: string) {
+        const user = await this.validateUser(email, password)
+        const token = this.jwtService.sign(email)
+
         return {
-            access_token: this.jwtService.sign(payload),
-        };
+            user: user,
+            token: token,
+        }
     }
 
-    async loginAdmin(admin: any) {
-        const payload = { email: admin.email, sub: admin.id, role: 'admin' };
+    async loginAdmin(email: string, password: string) {
+        const admin = await this.validateAdmin(email, password)
+        const token = this.jwtService.sign(email)
+
         return {
-            access_token: this.jwtService.sign(payload),
-        };
+            admin: admin,
+            token: token,
+        }
     }
 
-    async registerUser(user: Partial<User>) {
+    async registerUser(user: User) {
         return this.usersService.create(user);
     }
 
-    async registerAdmin(admin: Partial<Admin>) {
+    async registerAdmin(admin: Admin) {
         return this.adminsService.createAdmin(admin);
     }
 }

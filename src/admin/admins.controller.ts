@@ -1,14 +1,12 @@
-import { Controller, Get, Post, Body, Put, Param, Res, HttpStatus , UseGuards} from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Res, HttpStatus, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { AdminsService } from './admins.service';
 import { UsersService } from '../users/users.service';
 import { Admin } from './dto/admin.entity';
 import { UpdatePasswordDto } from "./dto/passwordUpdate-entity.dto"
-import { LoginDto } from "./dto/login-entity.dto"
-import { comparePasswords, hashPassword } from "../utils/password"
-import * as bcrypt from 'bcrypt';
-import { User } from 'src/users/dto/user.entity';
+import { hashPassword } from "../utils/password"
 import { JwtAdminGuard } from '../auth/jwt-admin.guard';
+import { errorResponse, successResponse } from "../utils/response"
 
 @Controller("admin")
 export class AdminsController {
@@ -24,54 +22,59 @@ export class AdminsController {
             // first check if an admin with corresponding email already exists
             const foundAdmin = await this.adminsService.getAdminByEmail(admin.email)
             if (!foundAdmin) {
-                const adm : Admin = {
-                    ...admin,
-                    role: "admin" // set role
-                }
+                const newAdmin = await this.adminsService.createAdmin(admin)
                 
-                const newAdmin = await this.adminsService.createAdmin(adm)
-                return res.status(HttpStatus.CREATED).json({
-                    message: "admin created succesfully",
-                    admin: newAdmin,
-                })
+                return successResponse(res, HttpStatus.CREATED, "Admin created succesfully", newAdmin)
             } else {
-                return res.status(HttpStatus.CONFLICT).json({
-                    message: 'User with email already exists'
-                });
-
+                return errorResponse(res, HttpStatus.BAD_REQUEST, "User with email already exists", null)
             }
         } catch (error) {
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: 'An error occurred while creating admin',
-                error: error.message,
-            });
+            return errorResponse(res, HttpStatus.BAD_REQUEST, "UAn error occurred while creating admin", null)
         }
     }
 
-    @Post("/login")
-    async login(@Body() loginRequest: LoginDto, @Res() res: Response): Promise<Response> {
+    @UseGuards(JwtAdminGuard)
+    @Post("/create")
+    async addAdmin(@Body() admin: Admin, @Res() res: Response): Promise<Response> {
         try {
-            const foundUser = await this.adminsService.getAdminByEmail(loginRequest.email)
-            // compare passwords
-            if (foundUser && comparePasswords(loginRequest.password, foundUser.password)) {
-                res.status(HttpStatus.OK).json({
-                    message: "login successful",
-                    admin: foundUser,
-                    token: null,
-                })
+            const foundAdmin = await this.adminsService.getAdminByEmail(admin.email)
+            if (!foundAdmin) {
+                const newAdmin = await this.adminsService.createAdmin(admin)
+                
+                return successResponse(res, HttpStatus.CREATED, "Admin created succesfully", newAdmin)
             } else {
-                return res.status(HttpStatus.BAD_REQUEST).json({
-                    message: 'Please review you login details and try again',
-                    error: null,
-                });
+                return errorResponse(res, HttpStatus.BAD_REQUEST, "User with email already exists", null)
             }
         } catch (error) {
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: 'An error occurred while updating profile',
-                error: error.message,
-            });
+            return errorResponse(res, HttpStatus.BAD_REQUEST, "An error occurred while creating admin", null)
         }
     }
+
+    // @Post("/login")
+    // async login(@Body() loginRequest: LoginDto, @Res() res: Response): Promise<Response> {
+    //     try {
+    //         const foundUser = await this.adminsService.getAdminByEmail(loginRequest.email)
+    //         // compare passwords
+    //         if (foundUser && comparePasswords(loginRequest.password, foundUser.password)) {
+    //             return successResponse(res, HttpStatus.CREATED, "Admin created succesfully", newAdmin)
+    //             res.status(HttpStatus.OK).json({
+    //                 message: "login successful",
+    //                 admin: foundUser,
+    //                 token: null,
+    //             })
+    //         } else {
+    //             return res.status(HttpStatus.BAD_REQUEST).json({
+    //                 message: 'Please review you login details and try again',
+    //                 error: null,
+    //             });
+    //         }
+    //     } catch (error) {
+    //         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+    //             message: 'An error occurred while updating profile',
+    //             error: error.message,
+    //         });
+    //     }
+    // }
 
 
     @UseGuards(JwtAdminGuard)
@@ -79,10 +82,7 @@ export class AdminsController {
     async updateAdminDetails(@Param() id: number, @Body() admin: Admin, @Res() res: Response): Promise<Response> {
         try {
             const updatedUser = await this.adminsService.updateDetails(id, admin)
-            return res.status(HttpStatus.OK).json({
-                message: "profile updated successfully",
-                admin: updatedUser,
-            })
+            return successResponse(res, HttpStatus.OK, "Profile updated successfully", updatedUser)
         } catch (error) {
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 message: 'An error occurred while updating profile',
@@ -103,16 +103,9 @@ export class AdminsController {
 
             // Await the result of the update operation
             const updatedAdmin = await this.adminsService.updateDetails(id, admin);
-
-            return res.status(HttpStatus.OK).json({
-                message: 'Admin password updated successfully',
-                admin: updatedAdmin,
-            });
+            return successResponse(res, HttpStatus.OK, "Admin password updated successfully", updatedAdmin)
         } catch (error) {
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: 'An error occurred while updating the password',
-                error: error.message,
-            });
+            return errorResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while updating the password", error.message)
         }
     }
 
@@ -121,15 +114,9 @@ export class AdminsController {
     async getAllUsers(@Res() res: Response): Promise<Response> {
         try {
             const users = this.usersService.findAll()
-            return res.status(HttpStatus.OK).json({
-                message: "users retrieved successfully",
-                users: users
-            })
+            return successResponse(res, HttpStatus.OK, "Users retrieved successfully", users)
         } catch (error) {
-            return res.status(HttpStatus.OK).json({
-                message: 'An error occurred while retrieving users',
-                error: error.message,
-            })
+            return errorResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while retrieving users", error.message)
         }
     }
 }

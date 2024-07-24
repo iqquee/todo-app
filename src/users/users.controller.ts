@@ -31,7 +31,7 @@ export class UsersController {
     @UseGuards(JwtUserGuard)
     @Get(':id')
     @UseGuards(JwtUserGuard)
-    async findOne(@Param('id') id: number): Promise<User> {
+    async findOne(@Param(':id') id: number): Promise<User> {
         const user = await this.usersService.findOne(id);
         if (!user) {
             throw new NotFoundException('User does not exist!');
@@ -44,7 +44,6 @@ export class UsersController {
     @Post("/signup")
     async create(@Body() user: User): Promise<User> {
         const foundUser = await this.usersService.findUserByEmail(user.email)
-        console.log("user details:", user)
         if (!foundUser) {
             user.password = await hashPassword(user.password)
             return this.usersService.create(user);

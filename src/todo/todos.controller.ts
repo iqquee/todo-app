@@ -12,18 +12,14 @@ export class TodosController {
     @Post("")
     async createTodo(@Body() request: Todo, @Res() res: Response): Promise<Response> {
         try {
-            const td : Todo = {
-                ...request,
-                user_id: null // TODO: set userId
-            }
-            const todo = await this.todosService.createTodo(td)
+            const todo = await this.todosService.createTodo(request)
             return successResponse(res, HttpStatus.CREATED, "todo created successfully", todo)
         } catch (error) {
             return errorResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while creating todo", error.message)
         }
     }
 
-    @Get("")
+    @Get("/:id")
     async getTodoByID(@Param(":id") id: number, @Res() res: Response): Promise<Response> {
         try {
             const todo = this.todosService.getTodoByID(id)
@@ -33,7 +29,7 @@ export class TodosController {
         }
     }
 
-    @Get("/completed")
+    @Get("/completed/:isCompleted")
     async getCompletedTodos(@Param(":isCompleted") completed: string, @Res() res: Response): Promise<Response> {
         try {
             let isCompleted = false
@@ -43,7 +39,6 @@ export class TodosController {
 
             const todos = this.todosService.getTodoByFilter(isCompleted)
             return successResponse(res, HttpStatus.CREATED, "todos retrieved successfully", todos)
-
         } catch (error) {
             return errorResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while retrieved todo", error.message)
         }
